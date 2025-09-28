@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SSDM 대시보드 기능 및 관리 패널</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .title-section {
+            padding-top: 40px;
+            padding-bottom: 20px;
+        }
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 40px;
+        }
+        .dashboard-visual {
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 30px;
+        }
+        .info-box {
+            width: 100%;
+            max-width: 1000px;
+            padding: 20px;
+            background-color: #f0f9ff;
+            border-radius: 10px;
+            border-left: 5px solid #0EA5E9;
+        }
+        .dashboard-menu {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+        .menu-item {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .menu-item:hover {
+            transform: translateY(-5px);
+        }
+        .menu-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .feature-item {
+            margin-bottom: 16px;
+        }
+        .dashboard-panel {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .panel-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .panel-content {
+            background-color: #f9fafb;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+        }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .data-row:last-child {
+            border-bottom: none;
+        }
+        .nav-arrows {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            gap: 20px;
+        }
+        .nav-arrow {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(59, 130, 246, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .nav-arrow:hover {
+            background-color: rgba(59, 130, 246, 1);
+            transform: scale(1.1);
+        }
+        .nav-arrow:disabled {
+            background-color: rgba(156, 163, 175, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+<div class="slide-container bg-white">
+<!-- 헤더/제목 섹션 -->
+<div class="title-section text-center">
+<h1 class="text-4xl font-bold text-gray-800">SSDM 대시보드 및 관리 기능</h1>
+<p class="text-xl text-gray-600 mt-2">개인정보 관리 및 권한 설정을 위한 통합 대시보드</p>
+</div>
+<!-- 콘텐츠 컨테이너 -->
+<div class="content-container">
+<!-- 대시보드 시각화 -->
+<div class="dashboard-visual">
+<!-- 메뉴 아이콘 -->
+<div class="dashboard-menu">
+<div class="menu-item" style="border-top: 4px solid #3B82F6;">
+<i class="fas fa-handshake menu-icon text-blue-500"></i>
+<span class="text-sm">동의현황</span>
+</div>
+<div class="menu-item" style="border-top: 4px solid #10B981;">
+<i class="fas fa-user-edit menu-icon text-green-500"></i>
+<span class="text-sm">정보수정</span>
+</div>
+<div class="menu-item" style="border-top: 4px solid #F59E0B;">
+<i class="fas fa-database menu-icon text-amber-500"></i>
+<span class="text-sm">저장소</span>
+</div>
+<div class="menu-item" style="border-top: 4px solid #8B5CF6;">
+<i class="fas fa-link menu-icon text-purple-500"></i>
+<span class="text-sm">연결서비스</span>
+</div>
+<div class="menu-item" style="border-top: 4px solid #EC4899;">
+<i class="fas fa-history menu-icon text-pink-500"></i>
+<span class="text-sm">제공내역</span>
+</div>
+</div>
+</div>
+
+<!-- 주요 기능 설명 -->
+<div class="info-box">
+<h3 class="text-xl font-bold text-gray-800 mb-4">SSDM 대시보드 주요 기능</h3>
+<div class="feature-item flex items-start">
+<div class="flex-shrink-0 mt-1">
+<i class="fas fa-handshake text-blue-500 text-lg"></i>
+</div>
+<div class="ml-3">
+<h4 class="font-bold">동의현황 관리</h4>
+<p class="text-sm text-gray-600">항상 동의된 서비스 목록을 확인할 수 있으며, 만료 7일 이내인 항목은 별도 표시됩니다.</p>
+</div>
+</div>
+<div class="feature-item flex items-start">
+<div class="flex-shrink-0 mt-1">
+<i class="fas fa-user-edit text-green-500 text-lg"></i>
+</div>
+<div class="ml-3">
+<h4 class="font-bold">개인정보 수정</h4>
+<p class="text-sm text-gray-600">이미 동의한 내역이 있는 경우 수정 시 주의가 필요합니다. 시스템이 사용자에게 주의사항을 안내합니다.</p>
+</div>
+</div>
+<div class="feature-item flex items-start">
+<div class="flex-shrink-0 mt-1">
+<i class="fas fa-database text-amber-500 text-lg"></i>
+</div>
+<div class="ml-3">
+<h4 class="font-bold">분산 저장소 관리</h4>
+<p class="text-sm text-gray-600">개인정보의 안전한 분산 저장을 위한 저장소 추가 및 관리. 단일 저장소인 경우 삭제 기능이 비활성화됩니다.</p>
+</div>
+</div>
+<div class="feature-item flex items-start">
+<div class="flex-shrink-0 mt-1">
+<i class="fas fa-link text-purple-500 text-lg"></i>
+</div>
+<div class="ml-3">
+<h4 class="font-bold">연결된 서비스 관리</h4>
+<p class="text-sm text-gray-600">항상 동의한 서비스 목록을 확인하고 관리할 수 있습니다. 연결 해제 시 해당 서비스에서 재동의가 필요합니다.</p>
+</div>
+</div>
+<div class="feature-item flex items-start">
+<div class="flex-shrink-0 mt-1">
+<i class="fas fa-history text-pink-500 text-lg"></i>
+</div>
+<div class="ml-3">
+<h4 class="font-bold">개인정보 제공 내역</h4>
+<p class="text-sm text-gray-600">일회성/항상 허용 모든 제공 내역을 시간, 서비스, 제공 항목별로 상세히 조회할 수 있습니다.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 네비게이션 화살표 -->
+<div class="nav-arrows">
+    <!-- 이전 버튼 -->
+    <div class="nav-arrow" onclick="window.location.href='security-features.html'">
+        <i class="fas fa-chevron-left"></i>
+    </div>
+    <!-- 다음 버튼 (마지막 페이지이므로 비활성화) -->
+    <div class="nav-arrow" disabled>
+        <i class="fas fa-chevron-right"></i>
+    </div>
+</div>
+
+</body>
+</html>

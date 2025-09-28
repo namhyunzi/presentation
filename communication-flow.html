@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>쇼핑몰 ↔ SSDM 통신 흐름</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .title-section {
+            padding-top: 40px;
+            padding-bottom: 20px;
+        }
+        .content-container {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 40px;
+        }
+        .communication-flow {
+            width: 650px;
+            position: relative;
+            height: 400px;
+        }
+        .info-box {
+            width: 480px;
+            padding: 20px;
+            background-color: #f8fafc;
+            border-radius: 10px;
+            height: 400px;
+            border-left: 5px solid #3B82F6;
+            margin-left: 100px;
+        }
+        .system-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            color: white;
+            position: absolute;
+            user-select: none;
+        }
+        .system-icon.fixed {
+            cursor: default !important;
+            pointer-events: none !important;
+        }
+        .system-icon.movable {
+            cursor: move;
+            pointer-events: auto;
+        }
+        .message-box {
+            position: absolute;
+            background-color: white;
+            border: 2px solid;
+            border-radius: 10px;
+            padding: 10px;
+            width: 240px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            user-select: none;
+        }
+        .message-box.fixed {
+            cursor: default !important;
+            pointer-events: none !important;
+        }
+        .message-box.movable {
+            cursor: move;
+            pointer-events: auto;
+        }
+        .arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+        .flow-arrow {
+            position: absolute;
+            height: 3px;
+            background-color: #64748b;
+            user-select: none;
+        }
+        .flow-arrow {
+            cursor: default;
+        }
+        .flow-arrow::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 5px 0 5px 8px;
+            border-color: transparent transparent transparent #64748b;
+        }
+        .flow-arrow[style*="background-color: #3B82F6"]::after {
+            border-color: transparent transparent transparent #3B82F6;
+        }
+        .flow-arrow[style*="background-color: #F59E0B"]::after {
+            border-color: transparent transparent transparent #F59E0B;
+        }
+        .draggable-arrow {
+            user-select: none;
+        }
+        .draggable-arrow.movable {
+            cursor: move;
+        }
+        .draggable-arrow.movable:hover {
+            opacity: 0.8;
+        }
+        /* 컨트롤 패널 CSS 제거됨 */
+        .jwt-token {
+            position: absolute;
+            width: 120px;
+            height: 40px;
+            background-color: #EAB308;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            user-select: none;
+        }
+        .jwt-token {
+            cursor: default;
+        }
+        .draggable-box {
+            cursor: default;
+        }
+        .feature-item {
+            margin-bottom: 12px;
+        }
+        .nav-arrows {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            gap: 20px;
+        }
+        .nav-arrow {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(59, 130, 246, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .nav-arrow:hover {
+            background-color: rgba(59, 130, 246, 1);
+            transform: scale(1.1);
+        }
+        .nav-arrow:disabled {
+            background-color: rgba(156, 163, 175, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+<div class="slide-container bg-white">
+<!-- 헤더/제목 섹션 -->
+<div class="title-section text-center">
+<h1 class="text-4xl font-bold text-gray-800">개인정보 접근 권한 요청 및 발급 프로세스</h1>
+<p class="text-xl text-gray-600 mt-2">택배사의 개인정보 조회를 위한 권한 생성</p>
+</div>
+<!-- 콘텐츠 컨테이너 -->
+<div class="content-container">
+<!-- 왼쪽: 통신 흐름 시각화 -->
+<div class="communication-flow">
+<!-- 쇼핑몰 아이콘 (고정) -->
+<div class="system-icon fixed" id="shopping-icon" style="background-color: #3B82F6; top: 38px; left: 56px;">
+<i class="fas fa-shopping-cart"></i>
+</div>
+<!-- SSDM 아이콘 (고정) -->
+<div class="system-icon fixed" id="ssdm-icon" style="background-color: #F59E0B; top: 41px; left: 523px;">
+<i class="fas fa-shield-alt"></i>
+</div>
+<!-- 1단계: JWT 토큰 요청 (고정) -->
+<div class="message-box fixed" id="step1" style="border-color: #3B82F6; top: 151px; left: -2px;">
+<h4 class="font-bold text-blue-600">1. JWT 토큰 요청</h4>
+<p class="text-sm">택배사 접근 권한 JWT 요청</p>
+</div>
+<!-- 2단계: JWT 토큰 생성 (고정) -->
+<div class="message-box fixed" id="step2" style="border-color: #F59E0B; top: 144px; left: 457px;">
+<h4 class="font-bold text-amber-600">2. JWT 토큰 생성</h4>
+<p class="text-sm">접근 권한 부여 및 JWT 전달</p>
+</div>
+<!-- JWT 토큰 (고정) -->
+<div class="jwt-token draggable-box" id="jwt-token" style="top: 219px; left: 293px;">
+<i class="fas fa-key mr-2"></i> JWT 토큰
+</div>
+<!-- 3단계: 데이터 저장 (고정) -->
+<div class="message-box fixed" id="step3" style="border-color: #3B82F6; top: 289px; left: -3px;">
+<h4 class="font-bold text-blue-600">3. 데이터 저장</h4>
+<p class="text-sm">주문내역 + JWT 저장</p>
+</div>
+<!-- 데이터베이스 아이콘 (고정) -->
+<div class="draggable-box" id="database-icon" style="position: absolute; top: 298px; left: 1px; user-select: none; z-index: 10; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+<i class="fas fa-database text-blue-500 text-4xl"></i>
+</div>
+
+<!-- 1단계 -> 3단계 세로 화살표 (고정) -->
+<div class="flow-arrow draggable-arrow" id="arrow1" style="width: 60px; top: 248px; left: 80px; transform: rotate(90deg);"></div>
+
+<!-- 가로 화살표들 (고정) -->
+<!-- 오른쪽 향하는 화살표 (파란색) -->
+<div class="flow-arrow draggable-arrow" id="arrow6" style="width: 150px; top: 159px; left: 270px; transform: rotate(0deg); background-color: #3B82F6;"></div>
+<!-- 왼쪽 향하는 화살표 (주황색) -->
+<div class="flow-arrow draggable-arrow" id="arrow7" style="width: 150px; top: 196px; left: 276px; transform: rotate(180deg); background-color: #F59E0B;"></div>
+
+<!-- 막대기들 제거됨 -->
+</div>
+<!-- 오른쪽: 정보 및 설명 -->
+<div class="info-box">
+<h3 class="text-xl font-bold text-gray-800 mb-4">JWT 기반 통신 주요 특징</h3>
+<div class="feature-item flex items-start">
+<div class="flex-shrink-0 mt-1">
+<i class="fas fa-check-circle text-green-500 text-lg"></i>
+</div>
+<div class="ml-3">
+<h4 class="font-bold">안전한 토큰 생성</h4>
+<p class="text-sm text-gray-600">SSDM이 접근 권한을 확인하고 암호화된 JWT 토큰 생성</p>
+</div>
+</div>
+<div class="feature-item flex items-start">
+<div class="flex-shrink-0 mt-1">
+<i class="fas fa-check-circle text-green-500 text-lg"></i>
+</div>
+<div class="ml-3">
+<h4 class="font-bold">제한된 권한 부여</h4>
+<p class="text-sm text-gray-600">택배사가 필요한 정보만 접근할 수 있도록 범위 제한</p>
+</div>
+</div>
+<div class="feature-item flex items-start">
+<div class="flex-shrink-0 mt-1">
+<i class="fas fa-check-circle text-green-500 text-lg"></i>
+</div>
+<div class="ml-3">
+<h4 class="font-bold">유효기간 설정</h4>
+<p class="text-sm text-gray-600">JWT 토큰 15분 만료 설정으로 보안 강화</p>
+</div>
+</div>
+<div class="feature-item flex items-start">
+<div class="flex-shrink-0 mt-1">
+<i class="fas fa-check-circle text-green-500 text-lg"></i>
+</div>
+<div class="ml-3">
+<h4 class="font-bold">안전한 저장</h4>
+<p class="text-sm text-gray-600">쇼핑몰은 주문내역과 JWT 토큰을 함께 암호화하여 저장</p>
+</div>
+</div>
+<div class="bg-blue-50 p-3 rounded-lg mt-4 border-l-4 border-blue-500">
+<p class="text-sm flex items-center">
+<i class="fas fa-info-circle text-blue-500 mr-2"></i>
+<span>JWT(JSON Web Token)는 당사자 간 정보를 안전하게 전송하기 위한 개방형 표준(RFC 7519)으로, 정보의 무결성과 신뢰성을 보장합니다.</span>
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 컨트롤 패널 제거됨 -->
+
+<script>
+let isDragging = false;
+let currentArrow = null;
+let startX, startY, startLeft, startTop;
+
+// 드래그 기능 완전 비활성화
+document.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+});
+
+// 드래그 기능 완전 비활성화
+document.addEventListener('mousemove', function(e) {
+    // 드래그 기능 비활성화
+});
+
+document.addEventListener('mouseup', function() {
+    // 드래그 기능 비활성화
+});
+
+// 화살표 위치 업데이트
+function updateArrows() {
+    // 세로 화살표만 업데이트 (arrow1)
+    const arrow1 = document.getElementById('arrow1');
+    if (arrow1) {
+        const top = document.getElementById('arrow1-top').value;
+        const left = document.getElementById('arrow1-left').value;
+        const width = document.getElementById('arrow1-width').value;
+        const rotate = document.getElementById('arrow1-rotate').value;
+        
+        arrow1.style.top = top + 'px';
+        arrow1.style.left = left + 'px';
+        arrow1.style.width = width + 'px';
+        arrow1.style.transform = 'rotate(' + rotate + 'deg)';
+    }
+}
+
+// 카드 위치 업데이트
+function updateBoxes() {
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const jwtToken = document.getElementById('jwt-token');
+    
+    step1.style.top = document.getElementById('step1-top').value + 'px';
+    step1.style.left = document.getElementById('step1-left').value + 'px';
+    
+    step2.style.top = document.getElementById('step2-top').value + 'px';
+    step2.style.left = document.getElementById('step2-left').value + 'px';
+    
+    step3.style.top = document.getElementById('step3-top').value + 'px';
+    step3.style.left = document.getElementById('step3-left').value + 'px';
+    
+    jwtToken.style.top = document.getElementById('jwt-token-top').value + 'px';
+    jwtToken.style.left = document.getElementById('jwt-token-left').value + 'px';
+}
+
+// 아이콘 위치 업데이트
+function updateIcons() {
+    const shoppingIcon = document.getElementById('shopping-icon');
+    const ssdmIcon = document.getElementById('ssdm-icon');
+    const databaseIcon = document.getElementById('database-icon');
+    
+    shoppingIcon.style.top = document.getElementById('shopping-icon-top').value + 'px';
+    shoppingIcon.style.left = document.getElementById('shopping-icon-left').value + 'px';
+    
+    ssdmIcon.style.top = document.getElementById('ssdm-icon-top').value + 'px';
+    ssdmIcon.style.left = document.getElementById('ssdm-icon-left').value + 'px';
+    
+    databaseIcon.style.top = document.getElementById('database-icon-top').value + 'px';
+    databaseIcon.style.left = document.getElementById('database-icon-left').value + 'px';
+}
+
+// 초기화
+function resetArrows() {
+    document.getElementById('arrow1-top').value = 100;
+    document.getElementById('arrow1-left').value = 290;
+    document.getElementById('arrow1-width').value = 200;
+    document.getElementById('arrow1-rotate').value = -45;
+    
+    document.getElementById('arrow2-top').value = 100;
+    document.getElementById('arrow2-left').value = 400;
+    document.getElementById('arrow2-width').value = 100;
+    document.getElementById('arrow2-rotate').value = 45;
+    
+    document.getElementById('arrow3-top').value = 100;
+    document.getElementById('arrow3-left').value = 400;
+    document.getElementById('arrow3-width').value = 100;
+    document.getElementById('arrow3-rotate').value = -45;
+    
+    document.getElementById('arrow4-top').value = 160;
+    document.getElementById('arrow4-left').value = 320;
+    document.getElementById('arrow4-width').value = 80;
+    document.getElementById('arrow4-rotate').value = 90;
+    
+    document.getElementById('arrow5-top').value = 120;
+    document.getElementById('arrow5-left').value = 200;
+    document.getElementById('arrow5-width').value = 60;
+    document.getElementById('arrow5-rotate').value = 90;
+    
+    document.getElementById('arrow6-top').value = 300;
+    document.getElementById('arrow6-left').value = 200;
+    document.getElementById('arrow6-width').value = 150;
+    document.getElementById('arrow6-rotate').value = 0;
+    
+    document.getElementById('arrow7-top').value = 320;
+    document.getElementById('arrow7-left').value = 200;
+    document.getElementById('arrow7-width').value = 150;
+    document.getElementById('arrow7-rotate').value = 180;
+    
+    document.getElementById('bar1-top').value = 350;
+    document.getElementById('bar1-left').value = 150;
+    document.getElementById('bar1-width').value = 200;
+    document.getElementById('bar1-rotate').value = 0;
+    
+    document.getElementById('bar2-top').value = 370;
+    document.getElementById('bar2-left').value = 150;
+    document.getElementById('bar2-width').value = 200;
+    document.getElementById('bar2-rotate').value = 0;
+    
+    updateArrows();
+}
+
+// 전체 초기화
+function resetAll() {
+    resetArrows();
+    document.getElementById('step1-top').value = 40;
+    document.getElementById('step1-left').value = 50;
+    document.getElementById('step2-top').value = 40;
+    document.getElementById('step2-left').value = 400;
+    document.getElementById('step3-top').value = 200;
+    document.getElementById('step3-left').value = 225;
+    document.getElementById('jwt-token-top').value = 120;
+    document.getElementById('jwt-token-left').value = 280;
+    document.getElementById('shopping-icon-top').value = 40;
+    document.getElementById('shopping-icon-left').value = 0;
+    document.getElementById('ssdm-icon-top').value = 40;
+    document.getElementById('ssdm-icon-left').value = 550;
+    document.getElementById('database-icon-top').value = 170;
+    document.getElementById('database-icon-left').value = 300;
+    updateBoxes();
+    updateIcons();
+}
+
+// 컨트롤 패널 업데이트
+function updateControlPanel() {
+    if (currentArrow) {
+        const elementId = currentArrow.id;
+        const top = parseInt(currentArrow.style.top);
+        const left = parseInt(currentArrow.style.left);
+        
+        if (elementId.startsWith('arrow')) {
+            const width = parseInt(currentArrow.style.width);
+            const transform = currentArrow.style.transform;
+            const rotate = transform.match(/-?\d+/) ? transform.match(/-?\d+/)[0] : 0;
+            
+            document.getElementById(elementId + '-top').value = top;
+            document.getElementById(elementId + '-left').value = left;
+            document.getElementById(elementId + '-width').value = width;
+            document.getElementById(elementId + '-rotate').value = rotate;
+        } else if (elementId.startsWith('step') || elementId === 'jwt-token') {
+            document.getElementById(elementId + '-top').value = top;
+            document.getElementById(elementId + '-left').value = left;
+        } else if (elementId.includes('icon')) {
+            document.getElementById(elementId + '-top').value = top;
+            document.getElementById(elementId + '-left').value = left;
+        } else if (elementId.startsWith('bar')) {
+            const width = parseInt(currentArrow.style.width);
+            const transform = currentArrow.style.transform;
+            const rotate = transform.match(/-?\d+/) ? transform.match(/-?\d+/)[0] : 0;
+            
+            document.getElementById(elementId + '-top').value = top;
+            document.getElementById(elementId + '-left').value = left;
+            document.getElementById(elementId + '-width').value = width;
+            document.getElementById(elementId + '-rotate').value = rotate;
+        }
+    }
+}
+</script>
+
+<!-- 네비게이션 화살표 -->
+<div class="nav-arrows">
+    <!-- 이전 버튼 -->
+    <div class="nav-arrow" onclick="window.location.href='popup-process.html'">
+        <i class="fas fa-chevron-left"></i>
+    </div>
+    <!-- 다음 버튼 -->
+    <div class="nav-arrow" onclick="window.location.href='complex-communication.html'">
+        <i class="fas fa-chevron-right"></i>
+    </div>
+</div>
+
+</body>
+</html>

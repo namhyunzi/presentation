@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>택배사 ↔ 쇼핑몰 ↔ SSDM 복합 통신</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .title-section {
+            padding-top: 40px;
+            padding-bottom: 20px;
+        }
+        .content-container {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 40px;
+        }
+        .communication-flow {
+            width: 650px;
+            position: relative;
+            height: 450px;
+        }
+        .info-box {
+            width: 480px;
+            padding: 20px;
+            background-color: #f8fafc;
+            border-radius: 10px;
+            height: 450px;
+            border-left: 5px solid #3B82F6;
+            margin-left: 100px;
+        }
+        .system-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            color: white;
+            position: absolute;
+        }
+        .message-box {
+            position: absolute;
+            background-color: white;
+            border: 2px solid;
+            border-radius: 10px;
+            padding: 10px;
+            width: 180px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+        .jwt-token {
+            position: absolute;
+            width: 120px;
+            height: 36px;
+            background-color: #EAB308;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .feature-item {
+            margin-bottom: 12px;
+        }
+        .nav-arrows {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            gap: 20px;
+        }
+        .nav-arrow {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(59, 130, 246, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .nav-arrow:hover {
+            background-color: rgba(59, 130, 246, 1);
+            transform: scale(1.1);
+        }
+        .nav-arrow:disabled {
+            background-color: rgba(156, 163, 175, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+        .draggable {
+            cursor: move;
+            user-select: none;
+        }
+        .draggable:hover {
+            opacity: 0.8;
+        }
+        .dragging {
+            z-index: 1000;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+<div class="slide-container bg-white">
+<!-- 헤더/제목 섹션 -->
+<div class="title-section text-center">
+<h1 class="text-4xl font-bold text-gray-800">택배사 ↔ 쇼핑몰 ↔ SSDM 개인정보 전달 프로세스</h1>
+<p class="text-xl text-gray-600 mt-2">3자간 개인정보 안전 전달 프로세스</p>
+</div>
+<!-- 콘텐츠 컨테이너 -->
+<div class="content-container">
+<!-- 왼쪽: 통신 흐름 시각화 -->
+<div class="communication-flow">
+<!-- 쇼핑몰 아이콘 -->
+<div class="system-icon" id="shopping-icon" style="background-color: #3B82F6; top: 23px; left: 19px;">
+<i class="fas fa-shopping-cart"></i>
+</div>
+<!-- 택배사 아이콘 -->
+<div class="system-icon" id="delivery-icon" style="background-color: #10B981; top: 23px; left: 301px;">
+<i class="fas fa-truck"></i>
+</div>
+<!-- SSDM 아이콘 -->
+<div class="system-icon" id="ssdm-icon" style="background-color: #F59E0B; top: 23px; left: 580px;">
+<i class="fas fa-shield-alt"></i>
+</div>
+<!-- 보안뷰어 아이콘 제거됨 -->
+<!-- 1단계: 쇼핑몰 -> 택배사 -->
+<div class="message-box" id="step1-box" style="border-color: #3B82F6; top: 160px; left: 88px;">
+<h4 class="font-bold text-blue-600">1. 주문내역 전달</h4>
+<p class="text-sm">주문내역 + JWT 전송</p>
+</div>
+<!-- JWT 토큰 이미지 (1단계) -->
+<div class="jwt-token" id="jwt1" style="top: 24px; left: 141px; width: 100px; height: 30px; font-size: 13px;">
+<i class="fas fa-key mr-1"></i> JWT 토큰
+</div>
+<!-- 2단계: 택배사 -> SSDM -->
+<div class="message-box" id="step2-box" style="border-color: #10B981; top: 160px; left: 405px;">
+<h4 class="font-bold text-green-600">2. 정보 요청</h4>
+<p class="text-sm">JWT + 요청필드 전송</p>
+</div>
+<!-- JWT 토큰 이미지 (2단계) -->
+<div class="jwt-token" id="jwt2" style="top: 93px; left: 441px; width: 100px; height: 30px; font-size: 13px;">
+<i class="fas fa-key mr-1"></i> JWT 검증
+</div>
+<!-- 3단계: SSDM -> 보안뷰어 -->
+<div class="message-box" id="step3-box" style="border-color: #F59E0B; top: 257px; left: 405px;">
+<h4 class="font-bold text-amber-600">3. 보안뷰어 제공</h4>
+<p class="text-sm">인증 후 정보 접근 허용</p>
+</div>
+
+<!-- 가로 화살표 + 막대기 세트들 -->
+<!-- 파란색 세트 (오른쪽) -->
+<div id="blue-set" style="position: absolute; top: 65px; left: 141px;">
+    <!-- 막대기 -->
+    <div style="width: 100px; height: 3px; background-color: #3B82F6; position: absolute; top: 0; left: 0;"></div>
+    <!-- 화살표 -->
+    <div class="arrow" style="border-width: 6px 0 6px 10px; border-color: transparent transparent transparent #3B82F6; position: absolute; top: -3px; left: 100px;"></div>
+</div>
+
+<!-- 초록색 세트 (오른쪽) -->
+<div id="green-set" style="position: absolute; top: 47px; left: 432px;">
+    <!-- 막대기 -->
+    <div style="width: 100px; height: 3px; background-color: #10B981; position: absolute; top: 0; left: 0;"></div>
+    <!-- 화살표 -->
+    <div class="arrow" style="border-width: 6px 0 6px 10px; border-color: transparent transparent transparent #10B981; position: absolute; top: -3px; left: 100px;"></div>
+</div>
+
+<!-- 주황색 세트 (왼쪽) -->
+<div id="orange-set" style="position: absolute; top: 66px; left: 439px;">
+    <!-- 막대기 -->
+    <div style="width: 100px; height: 3px; background-color: #F59E0B; position: absolute; top: 0; left: 0;"></div>
+    <!-- 화살표 -->
+    <div class="arrow" style="border-width: 6px 10px 6px 0; border-color: transparent #F59E0B transparent transparent; position: absolute; top: -3px; left: -10px;"></div>
+</div>
+</div>
+<!-- 오른쪽: 정보 및 설명 -->
+<div class="info-box">
+<h3 class="text-xl font-bold text-gray-800 mb-4">3자간 복합 통신 주요 특징</h3>
+<div class="feature-item flex items-start">
+<div class="flex-shrink-0 mt-1">
+<i class="fas fa-check-circle text-green-500 text-lg"></i>
+</div>
+<div class="ml-3">
+<h4 class="font-bold">안전한 개인정보 전달 체계</h4>
+<p class="text-sm text-gray-600">쇼핑몰이 JWT와 함께 주문정보를 택배사에 전달하여 직접적인 개인정보 전송을 방지</p>
+</div>
+</div>
+<div class="feature-item flex items-start">
+<div class="flex-shrink-0 mt-1">
+<i class="fas fa-check-circle text-green-500 text-lg"></i>
+</div>
+<div class="ml-3">
+<h4 class="font-bold">JWT 검증 및 권한 확인</h4>
+<p class="text-sm text-gray-600">SSDM은 JWT 토큰과 사전 약속된 요청 필드를 검증하여 보안성 강화</p>
+</div>
+</div>
+<div class="feature-item flex items-start">
+<div class="flex-shrink-0 mt-1">
+<i class="fas fa-check-circle text-green-500 text-lg"></i>
+</div>
+<div class="ml-3">
+<h4 class="font-bold">보안뷰어를 통한 제한적 접근</h4>
+<p class="text-sm text-gray-600">필요한 정보만 보안뷰어에 표시하여 택배사에 제한된 접근 권한 부여</p>
+</div>
+</div>
+<div class="feature-item flex items-start">
+<div class="flex-shrink-0 mt-1">
+<i class="fas fa-check-circle text-green-500 text-lg"></i>
+</div>
+<div class="ml-3">
+<h4 class="font-bold">세션 ID 관리</h4>
+<p class="text-sm text-gray-600">보안뷰어는 세션 ID로 관리되며 최대 2번까지만 요청 가능</p>
+</div>
+</div>
+<div class="bg-blue-50 p-3 rounded-lg mt-4 border-l-4 border-blue-500">
+<p class="text-sm flex items-center">
+<i class="fas fa-info-circle text-blue-500 mr-2"></i>
+<span>보안뷰어는 기본 12시간, 최대 36시간까지 연장 가능하며, JWT는 15분 후 만료됩니다. 만료된 JWT로는 보안뷰어를 다시 요청할 수 없습니다.</span>
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+let isDragging = false;
+let currentElement = null;
+let startX, startY, startLeft, startTop;
+
+// 드래그 시작
+document.addEventListener('mousedown', function(e) {
+    if (e.target.classList.contains('draggable') || e.target.closest('.draggable')) {
+        isDragging = true;
+        currentElement = e.target.closest('.draggable') || e.target;
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = parseInt(currentElement.style.left);
+        startTop = parseInt(currentElement.style.top);
+        currentElement.classList.add('dragging');
+        e.preventDefault();
+    }
+});
+
+// 드래그 중
+document.addEventListener('mousemove', function(e) {
+    if (isDragging && currentElement) {
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+        const newLeft = startLeft + deltaX;
+        const newTop = startTop + deltaY;
+        
+        currentElement.style.left = newLeft + 'px';
+        currentElement.style.top = newTop + 'px';
+    }
+});
+
+// 드래그 종료
+document.addEventListener('mouseup', function() {
+    if (isDragging && currentElement) {
+        currentElement.classList.remove('dragging');
+        isDragging = false;
+        currentElement = null;
+    }
+});
+
+// 위치 정보 출력 함수 (개발자 도구에서 사용)
+function getPositions() {
+    const elements = document.querySelectorAll('.draggable');
+    const positions = {};
+    elements.forEach(el => {
+        positions[el.id] = {
+            top: el.style.top,
+            left: el.style.left
+        };
+    });
+    console.log('현재 위치 정보:', positions);
+    return positions;
+}
+
+// 개발자 도구에서 사용할 수 있도록 전역 함수로 등록
+window.getPositions = getPositions;
+</script>
+
+<!-- 네비게이션 화살표 -->
+<div class="nav-arrows">
+    <!-- 이전 버튼 -->
+    <div class="nav-arrow" onclick="window.location.href='communication-flow.html'">
+        <i class="fas fa-chevron-left"></i>
+    </div>
+    <!-- 다음 버튼 -->
+    <div class="nav-arrow" onclick="window.location.href='security-features.html'">
+        <i class="fas fa-chevron-right"></i>
+    </div>
+</div>
+
+</body>
+</html>
