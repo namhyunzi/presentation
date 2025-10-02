@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-
 <html lang="ko">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>SSDM 연동 서비스 구성</title>
+<script>
+    // 메인 페이지로 리다이렉트
+    window.location.href = 'main.html';
+</script>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet"/>
@@ -203,6 +206,10 @@
 
 <!-- 네비게이션 화살표 -->
 <div class="nav-arrows">
+    <!-- 메인으로 돌아가기 버튼 -->
+    <div class="nav-arrow" onclick="window.location.href='main.html'" style="background-color: rgba(16, 185, 129, 0.8);">
+        <i class="fas fa-home"></i>
+    </div>
     <!-- 이전 버튼 (첫 페이지이므로 비활성화) -->
     <div class="nav-arrow" disabled>
         <i class="fas fa-chevron-left"></i>

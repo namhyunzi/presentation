@@ -1,0 +1,14 @@
+{
+  "name": "ssdm-presentation",
+  "version": "1.0.0",
+  "description": "SSDM 연동 서비스 프레젠테이션",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server -p 8080 -o",
+    "start": "npx http-server -p 8080"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
+
